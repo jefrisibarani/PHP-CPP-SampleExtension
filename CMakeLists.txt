@@ -4,21 +4,22 @@ cmake_minimum_required(VERSION 3.11-3.18)
 set(MY_EXTENSION_NAME       "functionwithparameters")
 
 
-# -----------------------------------------------------------------------------
 # PHPCPP build we want to use, shared(dll) or static library
 # -----------------------------------------------------------------------------
-set(PHPCPP_BUILD_SHARED     1)
+set(PHPCPP_BUILD_SHARED     TRUE)
+
 
 if(WIN32)
-   # -----------------------------------------------------------------------------
    # Windows build options
    # -----------------------------------------------------------------------------
    # PHP-CPP build mode, Release or Debug
-   set(PHPCPP_BUILD_DEBUG   0)
+   # Set to TRUE, when linking with Debug build of php-cpp library and compiling
+   # extension in Debug mode
+   set(PHPCPP_BUILD_DEBUG   FALSE)
    # PHP devel pack, download from https://windows.php.net/download/
    set(PHP_DEV_PATH         "d:/dev/cpp_php/ts/php-7.4.30-devel-vc15-x64")
    # Path to PHPCPP include dir
-   set(PHPCPP_INC_PATH      "d:/projects/php-cpp/PHP-CPP-cmake/_output/include")
+   set(PHPCPP_INCLUDE_DIR   "d:/projects/php-cpp/PHP-CPP-cmake/_output/include")
    # Path to PHPCPP library dir
    set(PHPCPP_LIB_PATH      "d:/projects/php-cpp/PHP-CPP-cmake/_output/lib")
    # PHP library file name
@@ -36,17 +37,16 @@ if(WIN32)
    endif()
 
 else()
-   # -----------------------------------------------------------------------------
    # Non windows build options
    # -----------------------------------------------------------------------------
    # Path to PHPCPP include dir
-   set(PHPCPP_INC_PATH      "/usr/local/include")
+   set(PHPCPP_INCLUDE_DIR      "/usr/local/include")
    # Path to PHPCPP library
    set(PHPCPP_LIB_PATH      "/usr/local/lib64")
 endif()
 
 
-# -----------------------------------------------------------------------------
+
 # Example project
 # -----------------------------------------------------------------------------
 project(${MY_EXTENSION_NAME})
@@ -57,7 +57,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${MY_EXTENSION_NAME}.cpp)
 
 target_include_directories(${PROJECT_NAME}
    PUBLIC ${PROJECT_SOURCE_DIR}
-   PUBLIC ${PHPCPP_INC_PATH} )
+   PUBLIC ${PHPCPP_INCLUDE_DIR} )
 
 if(WIN32)
    if (PHPCPP_BUILD_SHARED)
@@ -81,23 +81,18 @@ endif()
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
 
+# Copy binaries, resources to _output folder
 # -----------------------------------------------------------------------------
-# Output folder
-# -----------------------------------------------------------------------------
+set (OUTPUT_LIBDIR "${CMAKE_CURRENT_SOURCE_DIR}/_output/static")
 if (PHPCPP_BUILD_SHARED)
-  set (OUTPUT_LIBDIR "_output/shared")
-else()
-  set (OUTPUT_LIBDIR "_output/static")
+  set (OUTPUT_LIBDIR "${CMAKE_CURRENT_SOURCE_DIR}/_output/shared")
 endif()
 
 # Copy extension to _output dir
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E make_directory
-      ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>
-   COMMAND ${CMAKE_COMMAND} -E copy
-      $<TARGET_FILE:${PROJECT_NAME}> ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release> )
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>
+   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release> )
 
 # Copy php sample to _output dir
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy
-      ${CMAKE_CURRENT_SOURCE_DIR}/${MY_EXTENSION_NAME}.php ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release> )
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${MY_EXTENSION_NAME}.php ${OUTPUT_LIBDIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release> )

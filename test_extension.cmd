@@ -1,4 +1,7 @@
 @echo off
+rem author: jefrisibarani@gmail.com
+
+@echo off
 set argC=0
 for %%x in (%*) do Set /A argC+=1
 
