@@ -26,7 +26,7 @@ cmake --build build_shared_d --config=Debug
 
 
 ## Build on linux
-Replace -DPHPCPP_INCLUDE_DIR, -DPHPCPP_LIB_DIR and values with the location
+Replace -DPHPCPP_INCLUDE_DIR and -DPHPCPP_LIB_DIR values with the location
 of compiled PHP-CPP-cmake
 
 Build and link with PHP-CPP shared debug library 
